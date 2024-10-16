@@ -3,31 +3,31 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import ts from 'typescript';
 
-import {getAngularDecorators} from '../../../../../../compiler-cli/src/ngtsc/annotations';
-import {parseDecoratorInputTransformFunction} from '../../../../../../compiler-cli/src/ngtsc/annotations/directive';
-import {FatalDiagnosticError} from '../../../../../../compiler-cli/src/ngtsc/diagnostics';
-import {Reference, ReferenceEmitter} from '../../../../../../compiler-cli/src/ngtsc/imports';
+import {getAngularDecorators} from '@angular/compiler-cli/src/ngtsc/annotations';
+import {parseDecoratorInputTransformFunction} from '@angular/compiler-cli/src/ngtsc/annotations/directive';
+import {FatalDiagnosticError} from '@angular/compiler-cli/src/ngtsc/diagnostics';
+import {Reference, ReferenceEmitter} from '@angular/compiler-cli/src/ngtsc/imports';
 import {
   DecoratorInputTransform,
   DtsMetadataReader,
   InputMapping,
-} from '../../../../../../compiler-cli/src/ngtsc/metadata';
+} from '@angular/compiler-cli/src/ngtsc/metadata';
 import {
   DynamicValue,
   PartialEvaluator,
   ResolvedValueMap,
-} from '../../../../../../compiler-cli/src/ngtsc/partial_evaluator';
+} from '@angular/compiler-cli/src/ngtsc/partial_evaluator';
 import {
   ClassDeclaration,
   Decorator,
   ReflectionHost,
-} from '../../../../../../compiler-cli/src/ngtsc/reflection';
-import {CompilationMode} from '../../../../../../compiler-cli/src/ngtsc/transform';
+} from '@angular/compiler-cli/src/ngtsc/reflection';
+import {CompilationMode} from '@angular/compiler-cli/src/ngtsc/transform';
 import {MigrationHost} from '../migration_host';
 import {InputNode, isInputContainerNode} from '../input_detection/input_node';
 

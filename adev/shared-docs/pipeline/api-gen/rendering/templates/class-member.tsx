@@ -13,11 +13,7 @@ import {
   isPropertyEntry,
   isSetterEntry,
 } from '../entities/categorization';
-import {
-  FunctionSignatureMetadataRenderable,
-  MemberEntryRenderable,
-  MethodEntryRenderable,
-} from '../entities/renderables';
+import {MemberEntryRenderable} from '../entities/renderables';
 import {
   REFERENCE_MEMBER_CARD,
   REFERENCE_MEMBER_CARD_BODY,
@@ -28,24 +24,26 @@ import {ClassMethodInfo} from './class-method-info';
 import {DeprecatedLabel} from './deprecated-label';
 import {RawHtml} from './raw-html';
 import {getFunctionMetadataRenderable} from '../transforms/function-transforms';
+import {CodeSymbol} from './code-symbols';
 
 export function ClassMember(props: {member: MemberEntryRenderable}) {
   const body = (
     <div className={REFERENCE_MEMBER_CARD_BODY}>
       {isClassMethodEntry(props.member) ? (
-        props.member.signatures.map((sig, i, signatures) => {
+        (props.member.signatures.length
+          ? props.member.signatures
+          : [props.member.implementation]
+        ).map((sig) => {
           const renderableMember = getFunctionMetadataRenderable(sig);
-          return <ClassMethodInfo entry={renderableMember} isOverloaded={signatures.length > 1} />;
+          return <ClassMethodInfo entry={renderableMember} options={{showUsageNotes: true}} />;
         })
-      ) : (
+      ) : props.member.htmlDescription || props.member.deprecationMessage ? (
         <div className={REFERENCE_MEMBER_CARD_ITEM}>
-          {props.member.deprecationMessage !== null ? (
-            <DeprecatedLabel entry={props.member} />
-          ) : (
-            <></>
-          )}
+          <DeprecatedLabel entry={props.member} />
           <RawHtml value={props.member.htmlDescription} />
         </div>
+      ) : (
+        <></>
       )}
     </div>
   );
@@ -61,7 +59,7 @@ export function ClassMember(props: {member: MemberEntryRenderable}) {
             {isClassMethodEntry(props.member) && props.member.signatures.length > 1 ? (
               <span>{props.member.signatures.length} overloads</span>
             ) : returnType ? (
-              <code>{returnType}</code>
+              <CodeSymbol code={returnType} />
             ) : (
               <></>
             )}

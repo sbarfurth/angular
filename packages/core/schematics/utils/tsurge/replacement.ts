@@ -3,17 +3,16 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
-import {AbsoluteFsPath} from '../../../../compiler-cli/src/ngtsc/file_system';
-
 import MagicString from 'magic-string';
+import {ProjectFile} from './project_paths';
 
 /** A text replacement for the given file. */
 export class Replacement {
   constructor(
-    public absoluteFilePath: AbsoluteFsPath,
+    public projectFile: ProjectFile,
     public update: TextUpdate,
   ) {}
 }

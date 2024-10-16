@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 // Required as the signals library is in a separate package, so we need to explicitly ensure the
@@ -179,6 +179,11 @@ export interface ReactiveNode {
    * Called when a signal is read within this consumer.
    */
   consumerOnSignalRead(node: unknown): void;
+
+  /**
+   * A debug name for the reactive node. Used in Angular DevTools to identify the node.
+   */
+  debugName?: string;
 }
 
 interface ConsumerNode extends ReactiveNode {

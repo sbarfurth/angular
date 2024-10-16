@@ -3,13 +3,11 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import {TsurgeMigration} from '../migration';
 import {Serializable} from '../helpers/serializable';
-import ts from 'typescript';
-import {NgtscProgram} from '../../../../../compiler-cli/src/ngtsc/program';
 
 /**
  * Executes the analyze phase of the given migration against
@@ -17,12 +15,8 @@ import {NgtscProgram} from '../../../../../compiler-cli/src/ngtsc/program';
  *
  * @returns the serializable migration unit data.
  */
-export async function executeAnalyzePhase<
-  UnitData,
-  GlobalData,
-  TsProgramType extends ts.Program | NgtscProgram,
->(
-  migration: TsurgeMigration<UnitData, GlobalData, TsProgramType, unknown>,
+export async function executeAnalyzePhase<UnitData, GlobalData>(
+  migration: TsurgeMigration<UnitData, GlobalData>,
   tsconfigAbsolutePath: string,
 ): Promise<Serializable<UnitData>> {
   const baseInfo = migration.createProgram(tsconfigAbsolutePath);

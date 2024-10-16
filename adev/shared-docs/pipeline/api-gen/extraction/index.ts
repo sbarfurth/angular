@@ -1,7 +1,15 @@
 import {readFileSync, writeFileSync} from 'fs';
 import path from 'path';
 // @ts-ignore This compiles fine, but Webstorm doesn't like the ESM import in a CJS context.
-import {NgtscProgram, CompilerOptions, createCompilerHost, DocEntry} from '@angular/compiler-cli';
+import {
+  NgtscProgram,
+  CompilerOptions,
+  createCompilerHost,
+  DocEntry,
+  EntryCollection,
+  InterfaceEntry,
+  ClassEntry,
+} from '@angular/compiler-cli';
 import ts from 'typescript';
 
 function main() {
@@ -10,12 +18,16 @@ function main() {
 
   const [
     moduleName,
+    moduleLabel,
+    serializedPrivateModules,
     entryPointExecRootRelativePath,
     srcs,
     outputFilenameExecRootRelativePath,
     serializedPathMapWithExecRootRelativePaths,
     extraEntriesSrcs,
   ] = rawParamLines;
+
+  const privateModules = new Set(serializedPrivateModules.split(','));
 
   // The path map is a serialized JSON map of import path to index.ts file.
   // For example, {'@angular/core': 'path/to/some/index.ts'}
@@ -54,15 +66,45 @@ function main() {
       return result.concat(JSON.parse(readFileSync(path, {encoding: 'utf8'})) as DocEntry[]);
     }, []);
 
-  const extractedEntries = program.getApiDocumentation(entryPointExecRootRelativePath);
+  const apiDoc = program.getApiDocumentation(entryPointExecRootRelativePath, privateModules);
+  const extractedEntries = apiDoc.entries;
   const combinedEntries = extractedEntries.concat(extraEntries);
 
+  const normalized = moduleName.replace('@', '').replace(/[\/]/g, '_');
+
   const output = JSON.stringify({
+    moduleLabel: moduleLabel || moduleName,
     moduleName: moduleName,
+    normalizedModuleName: normalized,
     entries: combinedEntries,
-  });
+    symbols: [
+      // Symbols referenced, originating from other packages
+      ...apiDoc.symbols.entries(),
+
+      // Exported symbols from the current package
+      ...apiDoc.entries.map((entry) => [entry.name, moduleName]),
+
+      // Also doing it for every member of classes/interfaces
+      ...apiDoc.entries.flatMap((entry) => [
+        [entry.name, moduleName],
+        ...getEntriesFromMembers(entry).map((member) => [member, moduleName]),
+      ]),
+    ],
+  } as EntryCollection);
 
   writeFileSync(outputFilenameExecRootRelativePath, output, {encoding: 'utf8'});
+}
+
+function getEntriesFromMembers(entry: DocEntry): string[] {
+  if (!hasMembers(entry)) {
+    return [];
+  }
+
+  return entry.members.map((member) => `${entry.name}.${member.name}`);
+}
+
+function hasMembers(entry: DocEntry): entry is InterfaceEntry | ClassEntry {
+  return 'members' in entry;
 }
 
 main();

@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import ts from 'typescript';
@@ -417,7 +417,11 @@ runInEachFileSystem(() => {
           `
         import {Component} from '@angular/core';
 
-        @Component({template: '...', selector: 'internal-comp'})
+        @Component({
+          template: '...', 
+          selector: 'internal-comp',
+          standalone: false,
+        })
         export class InternalComp {
         }
         `,
@@ -427,7 +431,10 @@ runInEachFileSystem(() => {
           `
         import {Directive} from '@angular/core';
 
-        @Directive({selector: '[internal-dir]'})
+        @Directive({
+          selector: '[internal-dir]', 
+          standalone: false,
+        })
         export class InternalDir {
         }
         `,
@@ -437,7 +444,10 @@ runInEachFileSystem(() => {
           `
         import {Pipe, PipeTransform} from '@angular/core';
 
-        @Pipe({name: 'internalPipe'})
+        @Pipe({
+          name: 'internalPipe',
+          standalone: false,
+        })
         export class InternalPipe implements PipeTransform {
           transform(value: number): number {
             return value*2;
@@ -749,6 +759,7 @@ runInEachFileSystem(() => {
           @Component({
             selector: 'test-main',
             template: '<span>Hello world!</span>',
+            standalone: false,
           })
           export class MainComponent {
           }
@@ -1859,7 +1870,8 @@ runInEachFileSystem(() => {
           @Component({
             selector: 'my-comp',
             template: '',
-            hostDirectives: [ExternalDirective, n.ExternalDirective, LocalDirective]
+            hostDirectives: [ExternalDirective, n.ExternalDirective, LocalDirective],
+            standalone: false,
           })
           export class MyComp {}
         `,
@@ -1888,6 +1900,7 @@ runInEachFileSystem(() => {
               inputs: ['value', 'color: colorAlias'],
               outputs: ['opened', 'closed: closedAlias'],
             }],
+            standalone: false,
           })
           export class MyComp {}
         `,
@@ -1909,7 +1922,9 @@ runInEachFileSystem(() => {
           `
           import {Directive, Component} from '@angular/core';
 
-          @Directive({standalone: true})
+          @Directive({
+            standalone: true
+          })
           export class LocalDirective {
           }
 
@@ -1921,6 +1936,7 @@ runInEachFileSystem(() => {
               inputs: ['value', 'color: colorAlias'],
               outputs: ['opened', 'closed: closedAlias'],
             }],
+            standalone: false,
           })
           export class MyComp {}
         `,
@@ -1981,7 +1997,8 @@ runInEachFileSystem(() => {
           @Component({
             selector: 'my-component',
             template: '',
-            hostDirectives: [forwardRef(() => DirectiveB)]
+            hostDirectives: [forwardRef(() => DirectiveB)],
+            standalone: false,
           })
           export class MyComponent {
           }

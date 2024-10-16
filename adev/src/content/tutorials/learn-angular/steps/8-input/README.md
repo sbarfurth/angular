@@ -21,7 +21,7 @@ When you are ready to pass in a value through an `Input`, values can be set in t
 <docs-code header="app.component.ts" language="angular-ts" highlight="[3]">
 @Component({
   ...
-  template: `<app-user occupation="Angular Developer"><app-user/>`
+  template: `<app-user occupation="Angular Developer"></app-user>`
 })
 class AppComponent {}
 </docs-code>
@@ -31,7 +31,7 @@ Make sure you bind the property `occupation` in your `UserComponent`.
 <docs-code header="user.component.ts" language="angular-ts">
 @Component({
   ...
-  template: `<p>The user's name is {{occupation}}</p>`
+  template: `<p>The user's occupation is {{occupation}}</p>`
 })
 </docs-code>
 

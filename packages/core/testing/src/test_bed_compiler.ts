@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import {ResourceLoader} from '@angular/compiler';
@@ -51,7 +51,6 @@ import {
   ɵNG_INJ_DEF as NG_INJ_DEF,
   ɵNG_MOD_DEF as NG_MOD_DEF,
   ɵNG_PIPE_DEF as NG_PIPE_DEF,
-  ɵZONELESS_ENABLED as ZONELESS_ENABLED,
   ɵNgModuleFactory as R3NgModuleFactory,
   ɵNgModuleTransitiveScopes as NgModuleTransitiveScopes,
   ɵNgModuleType as NgModuleType,
@@ -66,6 +65,7 @@ import {
   ɵɵInjectableDeclaration as InjectableDeclaration,
   NgZone,
   ErrorHandler,
+  ɵNG_STANDALONE_DEFAULT_VALUE as NG_STANDALONE_DEFAULT_VALUE,
 } from '@angular/core';
 
 import {ComponentDef, ComponentType} from '../../src/render3';
@@ -103,7 +103,7 @@ function assertNoStandaloneComponents(
   types.forEach((type) => {
     if (!getAsyncClassMetadataFn(type)) {
       const component = resolver.resolve(type);
-      if (component && component.standalone) {
+      if (component && (component.standalone ?? NG_STANDALONE_DEFAULT_VALUE)) {
         throw new Error(ɵgenerateStandaloneInDeclarationsError(type, location));
       }
     }

@@ -9,7 +9,10 @@
     "name": "APP_INITIALIZER"
   },
   {
-    "name": "AfterRenderEventManager"
+    "name": "AfterRenderManager"
+  },
+  {
+    "name": "AfterRenderPhase"
   },
   {
     "name": "AnonymousSubject"
@@ -97,6 +100,9 @@
   },
   {
     "name": "ENVIRONMENT_INITIALIZER"
+  },
+  {
+    "name": "EffectScheduler"
   },
   {
     "name": "ElementRef"
@@ -267,7 +273,7 @@
     "name": "PRESERVE_HOST_CONTENT"
   },
   {
-    "name": "PendingTasks"
+    "name": "PendingTasksInternal"
   },
   {
     "name": "PlatformRef"
@@ -348,7 +354,13 @@
     "name": "ZONELESS_SCHEDULER_DISABLED"
   },
   {
+    "name": "ZoneAwareEffectScheduler"
+  },
+  {
     "name": "ZoneStablePendingTask"
+  },
+  {
+    "name": "_AfterRenderImpl"
   },
   {
     "name": "_ComponentFactoryResolver"
@@ -424,6 +436,9 @@
   },
   {
     "name": "assertConsumerNode"
+  },
+  {
+    "name": "assertNotDestroyed"
   },
   {
     "name": "attachPatchData"
@@ -924,6 +939,9 @@
     "name": "retrieveHydrationInfo"
   },
   {
+    "name": "runEffectsInView"
+  },
+  {
     "name": "saveNameToExportMap"
   },
   {
@@ -988,6 +1006,9 @@
   },
   {
     "name": "uniqueIdCounter"
+  },
+  {
+    "name": "unregisterLView"
   },
   {
     "name": "unwrapRNode"

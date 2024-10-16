@@ -3,8 +3,19 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
+
+/** The JSON data file format for extracted API reference info. */
+export interface EntryCollection {
+  moduleName: string;
+
+  // The normalized name is shared so rendering and manifest use the same common field
+  normalizedModuleName: string;
+
+  moduleLabel: string;
+  entries: DocEntry[];
+}
 
 /** Type of top-level documentation entry. */
 export enum EntryType {
@@ -96,6 +107,8 @@ export interface ClassEntry extends DocEntry {
   isAbstract: boolean;
   members: MemberEntry[];
   generics: GenericEntry[];
+  extends?: string;
+  implements: string[];
 }
 
 // From an API doc perspective, class and interfaces are identical.

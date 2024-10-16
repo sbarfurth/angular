@@ -67,6 +67,12 @@
       "shortDescription": "Generates a new basic application definition in the \"projects\" subfolder of the workspace.",
       "options": [
         {
+          "name": "experimental-zoneless",
+          "type": "boolean",
+          "default": false,
+          "description": "Create an application that does not utilize zone.js."
+        },
+        {
           "name": "inline-style",
           "type": "boolean",
           "aliases": [
@@ -246,6 +252,12 @@
           "type": "boolean",
           "default": false,
           "description": "The declaring NgModule exports this component."
+        },
+        {
+          "name": "export-default",
+          "type": "boolean",
+          "default": false,
+          "description": "Use default export for the component instead of a named export."
         },
         {
           "name": "flat",

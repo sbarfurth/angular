@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import {setActiveConsumer} from '@angular/core/primitives/signals';
@@ -15,7 +15,7 @@ import {internalImportProvidersFrom} from '../di/provider_collection';
 import {RuntimeError, RuntimeErrorCode} from '../errors';
 import {findMatchingDehydratedView} from '../hydration/views';
 import {populateDehydratedViewsInLContainer} from '../linker/view_container_ref';
-import {PendingTasks} from '../pending_tasks';
+import {PendingTasksInternal} from '../pending_tasks';
 import {assertLContainer, assertTNodeForLView} from '../render3/assert';
 import {bindingUpdated} from '../render3/bindings';
 import {ChainedInjector} from '../render3/chained_injector';
@@ -73,6 +73,7 @@ import {
   LDeferBlockDetails,
   LOADING_AFTER_CLEANUP_FN,
   NEXT_DEFER_BLOCK_STATE,
+  ON_COMPLETE_FNS,
   STATE_IS_FROZEN_UNTIL,
   TDeferBlockDetails,
   TriggerType,
@@ -230,6 +231,10 @@ export function ɵɵdefer(
     null, // LOADING_AFTER_CLEANUP_FN
     null, // TRIGGER_CLEANUP_FNS
     null, // PREFETCH_TRIGGER_CLEANUP_FNS
+    null, // UNIQUE_SSR_ID
+    null, // SSR_STATE
+    null, // ON_COMPLETE_FNS
+    null, // HYDRATE_TRIGGER_CLEANUP_FNS
   ];
   setLDeferBlockDetails(lView, adjustedIndex, lDetails);
 
@@ -510,23 +515,34 @@ export function ɵɵdeferPrefetchOnViewport(triggerIndex: number, walkUpTimes?: 
   }
 }
 
+// TODO: implement these instructions.
+export function ɵɵdeferHydrateWhen(): void {}
+export function ɵɵdeferHydrateNever(): void {}
+export function ɵɵdeferHydrateOnIdle(): void {}
+export function ɵɵdeferHydrateOnImmediate(): void {}
+export function ɵɵdeferHydrateOnTimer(): void {}
+export function ɵɵdeferHydrateOnHover(): void {}
+export function ɵɵdeferHydrateOnInteraction(): void {}
+export function ɵɵdeferHydrateOnViewport(): void {}
+
 /********** Helper functions **********/
 
 /**
  * Schedules triggering of a defer block for `on idle` and `on timer` conditions.
  */
 function scheduleDelayedTrigger(
-  scheduleFn: (callback: VoidFunction, lView: LView) => VoidFunction,
+  scheduleFn: (callback: VoidFunction, injector: Injector) => VoidFunction,
 ) {
   const lView = getLView();
   const tNode = getCurrentTNode()!;
+  const injector = lView[INJECTOR]!;
 
   renderPlaceholder(lView, tNode);
 
   // Only trigger the scheduled trigger on the browser
   // since we don't want to delay the server response.
-  if (isPlatformBrowser(lView[INJECTOR]!)) {
-    const cleanupFn = scheduleFn(() => triggerDeferBlock(lView, tNode), lView);
+  if (isPlatformBrowser(injector)) {
+    const cleanupFn = scheduleFn(() => triggerDeferBlock(lView, tNode), injector);
     const lDetails = getLDeferBlockDetails(lView, tNode);
     storeTriggerCleanupFn(TriggerType.Regular, lDetails, cleanupFn);
   }
@@ -538,13 +554,14 @@ function scheduleDelayedTrigger(
  * @param scheduleFn A function that does the scheduling.
  */
 function scheduleDelayedPrefetching(
-  scheduleFn: (callback: VoidFunction, lView: LView) => VoidFunction,
+  scheduleFn: (callback: VoidFunction, injector: Injector) => VoidFunction,
 ) {
   const lView = getLView();
+  const injector = lView[INJECTOR]!;
 
   // Only trigger the scheduled trigger on the browser
   // since we don't want to delay the server response.
-  if (isPlatformBrowser(lView[INJECTOR]!)) {
+  if (isPlatformBrowser(injector)) {
     const tNode = getCurrentTNode()!;
     const tView = lView[TVIEW];
     const tDetails = getTDeferBlockDetails(tView, tNode);
@@ -552,7 +569,7 @@ function scheduleDelayedPrefetching(
     if (tDetails.loadingState === DeferDependenciesLoadingState.NOT_STARTED) {
       const lDetails = getLDeferBlockDetails(lView, tNode);
       const prefetch = () => triggerPrefetching(tDetails, lView, tNode);
-      const cleanupFn = scheduleFn(prefetch, lView);
+      const cleanupFn = scheduleFn(prefetch, injector);
       storeTriggerCleanupFn(TriggerType.Prefetch, lDetails, cleanupFn);
     }
   }
@@ -745,6 +762,13 @@ function applyDeferBlockState(
     );
     markViewDirty(embeddedLView, NotificationSource.DeferBlockStateUpdate);
   }
+
+  if (newState === DeferBlockState.Complete && Array.isArray(lDetails[ON_COMPLETE_FNS])) {
+    for (const callback of lDetails[ON_COMPLETE_FNS]) {
+      callback();
+    }
+    lDetails[ON_COMPLETE_FNS] = null;
+  }
 }
 
 /**
@@ -825,7 +849,7 @@ function scheduleDeferBlockUpdate(
       renderDeferBlockState(nextState, tNode, lContainer);
     }
   };
-  return scheduleTimerTrigger(timeout, callback, hostLView);
+  return scheduleTimerTrigger(timeout, callback, hostLView[INJECTOR]!);
 }
 
 /**
@@ -900,7 +924,7 @@ export function triggerResourceLoading(
   }
 
   // Indicate that an application is not stable and has a pending task.
-  const pendingTasks = injector.get(PendingTasks);
+  const pendingTasks = injector.get(PendingTasksInternal);
   const taskId = pendingTasks.add();
 
   // The `dependenciesFn` might be `null` when all dependencies within
@@ -1069,4 +1093,20 @@ function triggerDeferBlock(lView: LView, tNode: TNode) {
         throwError('Unknown defer block state');
       }
   }
+}
+
+export function triggerAndWaitForCompletion(deferBlock: any): Promise<void> {
+  const lDetails = getLDeferBlockDetails(deferBlock.lView, deferBlock.tNode);
+  const promise = new Promise<void>((resolve) => {
+    onDeferBlockCompletion(lDetails, resolve);
+  });
+  triggerDeferBlock(deferBlock.lView, deferBlock.tNode);
+  return promise;
+}
+
+function onDeferBlockCompletion(lDetails: LDeferBlockDetails, callback: VoidFunction) {
+  if (!Array.isArray(lDetails[ON_COMPLETE_FNS])) {
+    lDetails[ON_COMPLETE_FNS] = [];
+  }
+  lDetails[ON_COMPLETE_FNS].push(callback);
 }

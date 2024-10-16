@@ -75,7 +75,6 @@ export class DocViewer implements OnChanges {
   private readonly elementRef = inject(ElementRef);
   private readonly location = inject(Location);
   private readonly navigationState = inject(NavigationState);
-  private readonly platformId = inject(PLATFORM_ID);
   private readonly router = inject(Router);
   private readonly viewContainer = inject(ViewContainerRef);
   private readonly environmentInjector = inject(EnvironmentInjector);
@@ -84,24 +83,25 @@ export class DocViewer implements OnChanges {
 
   // tslint:disable-next-line:no-unused-variable
   private animateContent = false;
-  private readonly pendingRenderTasks = inject(PendingTasks);
+  private readonly pendingTasks = inject(PendingTasks);
+
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   private countOfExamples = 0;
 
   async ngOnChanges(changes: SimpleChanges): Promise<void> {
-    const taskId = this.pendingRenderTasks.add();
+    const taskId = this.pendingTasks.add();
     if ('docContent' in changes) {
       await this.renderContentsAndRunClientSetup(this.docContent!);
     }
-    this.pendingRenderTasks.remove(taskId);
+    this.pendingTasks.remove(taskId);
   }
 
   async renderContentsAndRunClientSetup(content?: string): Promise<void> {
-    const isBrowser = isPlatformBrowser(this.platformId);
     const contentContainer = this.elementRef.nativeElement;
 
     if (content) {
-      if (isBrowser && !(this.document as any).startViewTransition) {
+      if (this.isBrowser && !(this.document as any).startViewTransition) {
         // Apply a special class to the host node to trigger animation.
         // Note: when a page is hydrated, the `content` would be empty,
         // so we don't trigger an animation to avoid a content flickering
@@ -112,7 +112,7 @@ export class DocViewer implements OnChanges {
       contentContainer.innerHTML = content;
     }
 
-    if (isBrowser) {
+    if (this.isBrowser) {
       // First we setup event listeners on the HTML we just loaded.
       // We want to do this before things like the example viewers are loaded.
       this.setupAnchorListeners(contentContainer);
@@ -195,7 +195,7 @@ export class DocViewer implements OnChanges {
     const preview = Boolean(placeholder.getAttribute('preview'));
     const title = placeholder.getAttribute('header') ?? undefined;
     const firstCodeSnippetTitle =
-      snippets.length > 0 ? snippets[0].title ?? snippets[0].name : undefined;
+      snippets.length > 0 ? (snippets[0].title ?? snippets[0].name) : undefined;
     const exampleRef = this.viewContainer.createComponent(ExampleViewer);
 
     this.countOfExamples++;
@@ -300,6 +300,14 @@ export class DocViewer implements OnChanges {
     // purposes and for hydration serialization to pick it up
     // during SSG.
     this.appRef.attachView(componentRef.hostView);
+
+    // This is wrapped with `isBrowser` in for hydration purposes.
+    if (this.isBrowser) {
+      // The `docs-viewer` may be rendered multiple times when navigating
+      // between pages, which will create new components that need to be
+      // destroyed for gradual cleanup.
+      this.destroyRef.onDestroy(() => componentRef.destroy());
+    }
 
     return componentRef;
   }

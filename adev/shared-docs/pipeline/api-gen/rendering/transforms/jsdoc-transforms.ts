@@ -30,6 +30,8 @@ import {
 } from '../entities/traits';
 
 import {getLinkToModule} from './url-transforms';
+import {addApiLinksToHtml} from './code-transforms';
+import {getCurrentSymbol, getModuleName, logUnknownSymbol} from '../symbol-context';
 
 export const JS_DOC_USAGE_NOTES_TAG = 'usageNotes';
 export const JS_DOC_SEE_TAG = 'see';
@@ -37,7 +39,7 @@ export const JS_DOC_DESCRIPTION_TAG = 'description';
 
 // Some links are written in the following format: {@link Route}
 const jsDoclinkRegex = /\{\s*@link\s+([^}]+)\s*\}/;
-const jsDoclinkRegexGlobal = /\{\s*@link\s+([^}]+)\s*\}/g;
+const jsDoclinkRegexGlobal = new RegExp(jsDoclinkRegex.source, 'g');
 
 /** Given an entity with a description, gets the entity augmented with an `htmlDescription`. */
 export function addHtmlDescription<T extends HasDescription & HasModuleName>(
@@ -101,15 +103,18 @@ export function addHtmlUsageNotes<T extends HasJsDocTags>(entry: T): T & HasHtml
       ) as string)
     : '';
 
+  const transformedHtml = addApiLinksToHtml(htmlUsageNotes);
+
   return {
     ...entry,
-    htmlUsageNotes,
+    htmlUsageNotes: transformedHtml,
   };
 }
 
 /** Given a markdown JsDoc text, gets the rendered HTML. */
 function getHtmlForJsDocText<T extends HasModuleName>(text: string, entry: T): string {
-  return marked.parse(convertLinks(wrapExampleHtmlElementsWithCode(text), entry)) as string;
+  const parsed = marked.parse(convertLinks(wrapExampleHtmlElementsWithCode(text))) as string;
+  return addApiLinksToHtml(parsed);
 }
 
 export function setEntryFlags<T extends HasJsDocTags & HasModuleName>(
@@ -127,9 +132,7 @@ export function setEntryFlags<T extends HasJsDocTags & HasModuleName>(
   };
 }
 
-function getHtmlAdditionalLinks<T extends HasJsDocTags & HasModuleName>(
-  entry: T,
-): LinkEntryRenderable[] {
+function getHtmlAdditionalLinks<T extends HasJsDocTags>(entry: T): LinkEntryRenderable[] {
   const markdownLinkRule = /\[(.*?)\]\((.*?)(?: "(.*?)")?\)/;
 
   const seeAlsoLinks = entry.jsdocTags
@@ -150,21 +153,8 @@ function getHtmlAdditionalLinks<T extends HasJsDocTags & HasModuleName>(
 
       if (linkMatch) {
         const link = linkMatch[1];
-
-        // handling links like {@link Route Some route with description}
-        const [symbol, description] = link.split(/\s(.+)/);
-        if (entry && description) {
-          return {
-            label: description.trim(),
-            url: `${getLinkToModule(entry.moduleName)}/${symbol}`,
-          };
-        }
-
-        // handling links like {@link Route}
-        return {
-          label: linkMatch[1].trim(),
-          url: `${getLinkToModule(entry.moduleName)}/${linkMatch[1].trim()}`,
-        };
+        const {url, label} = parseAtLink(link);
+        return {label, url};
       }
 
       return undefined;
@@ -196,15 +186,52 @@ function convertJsDocExampleToHtmlExample(text: string): string {
   );
 }
 
-function convertLinks(text: string, entry: HasModuleName) {
+/**
+ * Converts {@link } tags into html anchor elements
+ */
+function convertLinks(text: string) {
   return text.replace(jsDoclinkRegexGlobal, (_, link) => {
-    const [symbol, description] = link.split(/\s(.+)/);
-    if (symbol && description) {
-      // {@link Route Some route with description}
-      return `<a href="${getLinkToModule(entry.moduleName)}/${symbol}"><code>${description}</code></a>`;
-    } else {
-      // {@link Route}
-      return `<a href="${getLinkToModule(entry.moduleName)}/${symbol}"><code>${symbol}</code></a>`;
-    }
+    const {label, url} = parseAtLink(link);
+
+    return `<a href="${url}"><code>${label}</code></a>`;
   });
+}
+
+function parseAtLink(link: string): {label: string; url: string} {
+  // Because of microsoft/TypeScript/issues/59679
+  // getTextOfJSDocComment introduces an extra space between the symbol and a trailing ()
+  link = link.replace(/ \(\)$/, '');
+
+  let [rawSymbol, description] = link.split(/\s(.+)/);
+  if (rawSymbol.startsWith('#')) {
+    rawSymbol = rawSymbol.substring(1);
+  } else if (rawSymbol.startsWith('http://') || rawSymbol.startsWith('https://')) {
+    return {
+      url: rawSymbol,
+      label: rawSymbol.split('/').pop()!,
+    };
+  }
+
+  let [symbol, subSymbol] = rawSymbol.replace(/\(\)$/, '').split(/(?:#|\.)/);
+
+  let moduleName = getModuleName(symbol);
+  const label = description ?? rawSymbol;
+
+  const currentSymbol = getCurrentSymbol();
+
+  if (!moduleName) {
+    // 2nd attemp, try to get the module name in the context of the current symbol
+    moduleName = getModuleName(`${currentSymbol}.${symbol}`);
+
+    if (!moduleName || !currentSymbol) {
+      // TODO: remove the links that generate this error
+      // TODO: throw an error when there are no more warning generated
+      logUnknownSymbol(link, symbol);
+      return {label, url: '#'};
+    }
+    subSymbol = symbol;
+    symbol = currentSymbol;
+  }
+
+  return {label, url: getLinkToModule(moduleName, symbol, subSymbol)};
 }

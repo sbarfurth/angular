@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import {
@@ -2586,6 +2586,12 @@ class Scope {
   private appendDeferredBlock(block: TmplAstDeferredBlock): void {
     this.appendDeferredTriggers(block, block.triggers);
     this.appendDeferredTriggers(block, block.prefetchTriggers);
+
+    // Only the `when` hydration trigger needs to be checked.
+    if (block.hydrateTriggers.when) {
+      this.opQueue.push(new TcbExpressionOp(this.tcb, this, block.hydrateTriggers.when.value));
+    }
+
     this.appendChildren(block);
 
     if (block.placeholder !== null) {
@@ -2703,21 +2709,11 @@ class TcbExpressionTranslator {
    * context). This method assists in resolving those.
    */
   protected resolve(ast: AST): ts.Expression | null {
-    // TODO: this is actually a bug, because `ImplicitReceiver` extends `ThisReceiver`. Consider a
-    // case when the explicit `this` read is inside a template with a context that also provides the
-    // variable name being read:
-    // ```
-    // <ng-template let-a>{{this.a}}</ng-template>
-    // ```
-    // Clearly, `this.a` should refer to the class property `a`. However, because of this code,
-    // `this.a` will refer to `let-a` on the template context.
-    //
-    // Note that the generated code is actually consistent with this bug. To fix it, we have to:
-    // - Check `!(ast.receiver instanceof ThisReceiver)` in this condition
-    // - Update `ingest.ts` in the Template Pipeline (see the corresponding comment)
-    // - Turn off legacy TemplateDefinitionBuilder
-    // - Fix g3, and release in a major version
-    if (ast instanceof PropertyRead && ast.receiver instanceof ImplicitReceiver) {
+    if (
+      ast instanceof PropertyRead &&
+      ast.receiver instanceof ImplicitReceiver &&
+      !(ast.receiver instanceof ThisReceiver)
+    ) {
       // Try to resolve a bound target for this expression. If no such target is available, then
       // the expression is referencing the top-level component context. In that case, `null` is
       // returned here to let it fall through resolution so it will be caught when the

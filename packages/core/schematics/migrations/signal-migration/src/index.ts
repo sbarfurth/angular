@@ -3,39 +3,26 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
-import path from 'path';
-
-import assert from 'assert';
-import {SignalInputMigration} from './migration';
-import {writeMigrationReplacements} from './write_replacements';
-
-main(path.resolve(process.argv[2]), process.argv.includes('--best-effort-mode')).catch((e) => {
-  console.error(e);
-  process.exitCode = 1;
-});
-
-/**
- * Runs the signal input migration for the given TypeScript project.
- */
-export async function main(absoluteTsconfigPath: string, bestEffortMode: boolean) {
-  const migration = new SignalInputMigration();
-
-  migration.bestEffortMode = bestEffortMode;
-  migration.upgradeAnalysisPhaseToAvoidBatch = true;
-
-  const baseInfo = migration.createProgram(absoluteTsconfigPath);
-  const info = migration.prepareProgram(baseInfo);
-
-  await migration.analyze(info);
-
-  assert(
-    migration.upgradedAnalysisPhaseResults,
-    'Expected upgraded analysis phase results; batch mode is disabled.',
-  );
-
-  // Apply replacements
-  writeMigrationReplacements(migration.upgradedAnalysisPhaseResults);
-}
+export {type KnownInputInfo, KnownInputs} from './input_detection/known_inputs';
+export {
+  type InputNameNode,
+  type InputNode,
+  isInputContainerNode,
+} from './input_detection/input_node';
+export {type ClassFieldDescriptor} from './passes/reference_resolution/known_fields';
+export {type InputDescriptor, getInputDescriptor, isInputDescriptor} from './utils/input_id';
+export {SignalInputMigration} from './migration';
+export {type MigrationConfig} from './migration_config';
+export {
+  type FieldIncompatibility,
+  FieldIncompatibilityReason,
+  ClassIncompatibilityReason,
+  nonIgnorableFieldIncompatibilities,
+} from './passes/problematic_patterns/incompatibility';
+export {
+  getMessageForClassIncompatibility,
+  getMessageForFieldIncompatibility,
+} from './passes/problematic_patterns/incompatibility_human';

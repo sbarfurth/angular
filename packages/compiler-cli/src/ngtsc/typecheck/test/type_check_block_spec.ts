@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import ts from 'typescript';
@@ -58,6 +58,14 @@ describe('type check blocks', () => {
     expect(tcb('{{ a ?? b ?? c }}')).toContain('(((((this).a)) ?? (((this).b))) ?? (((this).c)))');
     expect(tcb('{{ (a ?? b) + (c ?? e) }}')).toContain(
       '(((((this).a)) ?? (((this).b))) + ((((this).c)) ?? (((this).e))))',
+    );
+  });
+
+  it('should handle typeof expressions', () => {
+    expect(tcb('{{typeof a}}')).toContain('typeof (((this).a))');
+    expect(tcb('{{!(typeof a)}}')).toContain('!(typeof (((this).a)))');
+    expect(tcb('{{!(typeof a === "object")}}')).toContain(
+      '!((typeof (((this).a))) === ("object"))',
     );
   });
 
@@ -963,6 +971,7 @@ describe('type check blocks', () => {
       useInlineTypeConstructors: true,
       suggestionsForSuboptimalTypeInference: false,
       controlFlowPreventingContentProjection: 'warning',
+      unusedStandaloneImports: 'warning',
       allowSignalsInTwoWayBindings: true,
     };
 
@@ -1669,6 +1678,16 @@ describe('type check blocks', () => {
     it('should generate `prefetch when` trigger', () => {
       const TEMPLATE = `
         @defer (prefetch when shouldShow() && isVisible) {
+          {{main()}}
+        }
+      `;
+
+      expect(tcb(TEMPLATE)).toContain('((this).shouldShow()) && (((this).isVisible));');
+    });
+
+    it('should generate `hydrate when` trigger', () => {
+      const TEMPLATE = `
+        @defer (hydrate when shouldShow() && isVisible) {
           {{main()}}
         }
       `;

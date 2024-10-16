@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import {compileNgModuleFactory} from '../application/application_ngmodule_factory_compiler';
@@ -79,7 +79,11 @@ export class PlatformRef {
       allAppProviders,
     );
 
-    return bootstrap({moduleRef, allPlatformModules: this._modules});
+    return bootstrap({
+      moduleRef,
+      allPlatformModules: this._modules,
+      platformInjector: this.injector,
+    });
   }
 
   /**

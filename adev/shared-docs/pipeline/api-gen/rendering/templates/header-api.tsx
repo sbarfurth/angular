@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import {h} from 'preact';
@@ -74,12 +74,12 @@ export function HeaderApi(props: {entry: DocEntryRenderable; showFullDescription
         )}
       </div>
 
-      <p
+      <section
         className={'docs-reference-description'}
         dangerouslySetInnerHTML={{
           __html: props.showFullDescription ? entry.htmlDescription : entry.shortHtmlDescription,
         }}
-      ></p>
+      ></section>
 
       <DocsPillRow links={entry.additionalLinks} />
     </header>

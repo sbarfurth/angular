@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 import {
   AST,
@@ -30,7 +30,7 @@ import {
 } from '@angular/compiler-cli/src/ngtsc/typecheck/api';
 import ts from 'typescript';
 
-import {DisplayInfoKind, SYMBOL_PUNC, SYMBOL_SPACE, SYMBOL_TEXT} from './display_parts';
+import {DisplayInfoKind, SYMBOL_PUNC, SYMBOL_SPACE, SYMBOL_TEXT} from './utils/display_parts';
 import {
   createDollarAnyQuickInfo,
   createNgTemplateQuickInfo,

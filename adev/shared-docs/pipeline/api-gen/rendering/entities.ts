@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 // This file is temporarily copied from work-in-progress on
@@ -101,6 +101,8 @@ export interface ClassEntry extends DocEntry {
   isAbstract: boolean;
   members: MemberEntry[];
   generics: GenericEntry[];
+  extends?: string;
+  implements: string[];
 }
 
 // From an API doc perspective, class and interfaces are identical.

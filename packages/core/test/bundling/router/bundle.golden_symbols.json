@@ -30,7 +30,10 @@
     "name": "ActivationStart"
   },
   {
-    "name": "AfterRenderEventManager"
+    "name": "AfterRenderManager"
+  },
+  {
+    "name": "AfterRenderPhase"
   },
   {
     "name": "AnonymousSubject"
@@ -186,9 +189,6 @@
     "name": "DomAdapter"
   },
   {
-    "name": "DomEventsPlugin"
-  },
-  {
     "name": "DomRendererFactory2"
   },
   {
@@ -216,6 +216,9 @@
     "name": "EVENT_MANAGER_PLUGINS"
   },
   {
+    "name": "EffectScheduler"
+  },
+  {
     "name": "ElementRef"
   },
   {
@@ -234,9 +237,6 @@
     "name": "ErrorHandler"
   },
   {
-    "name": "EventDelegationPlugin"
-  },
-  {
     "name": "EventEmitter"
   },
   {
@@ -247,9 +247,6 @@
   },
   {
     "name": "EventType2"
-  },
-  {
-    "name": "GLOBAL_EVENT_DELEGATION"
   },
   {
     "name": "GenericBrowserDomAdapter"
@@ -531,7 +528,7 @@
     "name": "PathLocationStrategy"
   },
   {
-    "name": "PendingTasks"
+    "name": "PendingTasksInternal"
   },
   {
     "name": "PlatformLocation"
@@ -792,7 +789,13 @@
     "name": "ZONELESS_SCHEDULER_DISABLED"
   },
   {
+    "name": "ZoneAwareEffectScheduler"
+  },
+  {
     "name": "ZoneStablePendingTask"
+  },
+  {
+    "name": "_AfterRenderImpl"
   },
   {
     "name": "_ComponentFactoryResolver"
@@ -879,7 +882,7 @@
     "name": "addToArray"
   },
   {
-    "name": "addToViewTree"
+    "name": "addToEndOfViewTree"
   },
   {
     "name": "advanceActivatedRoute"
@@ -919,6 +922,9 @@
   },
   {
     "name": "assertConsumerNode"
+  },
+  {
+    "name": "assertNotDestroyed"
   },
   {
     "name": "assertProducerNode"
@@ -1077,6 +1083,9 @@
     "name": "createLView"
   },
   {
+    "name": "createLinkElement"
+  },
+  {
     "name": "createNewSegmentChildren"
   },
   {
@@ -1105,6 +1114,9 @@
   },
   {
     "name": "createSegmentGroupFromRoute"
+  },
+  {
+    "name": "createStyleElement"
   },
   {
     "name": "createTView"
@@ -1357,6 +1369,9 @@
   },
   {
     "name": "getInherited"
+  },
+  {
+    "name": "getInitialLViewFlagsFromDef"
   },
   {
     "name": "getInjectImplementation"
@@ -1950,6 +1965,9 @@
     "name": "remove"
   },
   {
+    "name": "removeElements"
+  },
+  {
     "name": "removeFromArray"
   },
   {
@@ -1984,6 +2002,9 @@
   },
   {
     "name": "routes"
+  },
+  {
+    "name": "runEffectsInView"
   },
   {
     "name": "runInInjectionContext"
@@ -2152,6 +2173,9 @@
   },
   {
     "name": "uniqueIdCounter"
+  },
+  {
+    "name": "unregisterLView"
   },
   {
     "name": "unwrapElementRef"

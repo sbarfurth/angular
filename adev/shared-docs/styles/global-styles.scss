@@ -64,6 +64,7 @@ $theme: mat.m2-define-light-theme(
 @include mat.core();
 @include mat.tabs-theme($theme);
 @include mat.button-toggle-theme($theme);
+@include mat.tooltip-theme($theme);
 
 // Include custom docs styles
 @include alert.docs-alert();
@@ -100,7 +101,6 @@ $theme: mat.m2-define-light-theme(
     /* Optional, if you also want font styles */
     font-style: var(--shiki-dark-font-style);
     font-weight: var(--shiki-dark-font-weight);
-    text-decoration: var(--shiki-dark-text-decoration);
   }
 
   .shiki-ln-line-highlighted,
@@ -116,6 +116,13 @@ $theme: mat.m2-define-light-theme(
 
   &.cli {
     padding-inline-start: 1rem;
+  }
+
+  a {
+    color: inherit;
+    &:hover {
+      text-decoration: underline;
+    }
   }
 }
 

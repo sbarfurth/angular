@@ -3,21 +3,20 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
-import {nonIgnorableIncompatibilities} from './input_detection/incompatibility';
 import {KnownInputs} from './input_detection/known_inputs';
+import {nonIgnorableFieldIncompatibilities} from './passes/problematic_patterns/incompatibility';
 
 /** Filters ignorable input incompatibilities when best effort mode is enabled. */
 export function filterIncompatibilitiesForBestEffortMode(knownInputs: KnownInputs) {
-  // Remove all "ignorable" incompatibilities of inputs, if best effort mode is requested.
   knownInputs.knownInputIds.forEach(({container: c}) => {
-    if (c.incompatible !== null && !nonIgnorableIncompatibilities.includes(c.incompatible)) {
-      c.incompatible = null;
-    }
+    // All class incompatibilities are "filterable" right now.
+    c.incompatible = null;
+
     for (const [key, i] of c.memberIncompatibility.entries()) {
-      if (!nonIgnorableIncompatibilities.includes(i.reason)) {
+      if (!nonIgnorableFieldIncompatibilities.includes(i.reason)) {
         c.memberIncompatibility.delete(key);
       }
     }

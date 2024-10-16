@@ -3,14 +3,11 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import ts from 'typescript';
-import {isIdentifierFreeInScope} from './is_identifier_free_in_scope';
-
-/** List of potential suffixes to avoid conflicts. */
-const fallbackSuffixes = ['Value', 'Val', 'Input'];
+import {isIdentifierFreeInScope, ReservedMarker} from './is_identifier_free_in_scope';
 
 /**
  * Helper that can generate unique identifier names at a
@@ -20,6 +17,8 @@ const fallbackSuffixes = ['Value', 'Val', 'Input'];
  * to support narrowing.
  */
 export class UniqueNamesGenerator {
+  constructor(private readonly fallbackSuffixes: string[]) {}
+
   generate(base: string, location: ts.Node): string {
     const checkNameAndClaimIfAvailable = (name: string): boolean => {
       const freeInfo = isIdentifierFreeInScope(name, location);
@@ -28,7 +27,8 @@ export class UniqueNamesGenerator {
       }
 
       // Claim the locals to avoid conflicts with future generations.
-      freeInfo.container.locals?.set(name, null! as ts.Symbol);
+      freeInfo.container.locals ??= new Map();
+      freeInfo.container.locals.set(name, ReservedMarker);
       return true;
     };
 
@@ -38,7 +38,7 @@ export class UniqueNamesGenerator {
     }
 
     // Try any of the possible suffixes.
-    for (const suffix of fallbackSuffixes) {
+    for (const suffix of this.fallbackSuffixes) {
       const name = `${base}${suffix}`;
       if (checkNameAndClaimIfAvailable(name)) {
         return name;

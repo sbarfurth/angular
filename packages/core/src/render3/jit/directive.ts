@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import {
@@ -41,6 +41,7 @@ import {
   patchComponentDefWithScope,
   transitiveScopesFor,
 } from './module';
+import {NG_STANDALONE_DEFAULT_VALUE} from '../standalone-default-value';
 import {isComponent, verifyStandaloneImport} from './util';
 
 /**
@@ -210,6 +211,9 @@ export function compileComponent(type: Type<any>, metadata: Component): void {
         }
       }
       return ngComponentDef;
+    },
+    set: (def: ComponentDef<unknown> | null) => {
+      ngComponentDef = def;
     },
     // Make the property configurable in dev mode to allow overriding in tests
     configurable: !!ngDevMode,
@@ -449,7 +453,8 @@ export function directiveMetadata(type: Type<any>, metadata: Directive): R3Direc
     exportAs: extractExportAs(metadata.exportAs),
     providers: metadata.providers || null,
     viewQueries: extractQueriesMetadata(type, propMetadata, isViewQuery),
-    isStandalone: !!metadata.standalone,
+    isStandalone:
+      metadata.standalone === undefined ? NG_STANDALONE_DEFAULT_VALUE : !!metadata.standalone,
     isSignal: !!metadata.signals,
     hostDirectives:
       metadata.hostDirectives?.map((directive) =>

@@ -3,7 +3,7 @@
  * Copyright Google LLC All Rights Reserved.
  *
  * Use of this source code is governed by an MIT-style license that can be
- * found in the LICENSE file at https://angular.io/license
+ * found in the LICENSE file at https://angular.dev/license
  */
 
 import {
@@ -120,7 +120,10 @@ describe('environment injector', () => {
   it('should expose the ComponentFactoryResolver token bound to env injector with specified providers', () => {
     class Service {}
 
-    @Component({selector: 'test-cmp'})
+    @Component({
+      selector: 'test-cmp',
+      standalone: false,
+    })
     class TestComponent {
       constructor(readonly service: Service) {}
     }
